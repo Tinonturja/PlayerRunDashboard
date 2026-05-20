@@ -3,10 +3,14 @@ import { OP_TYPES, colorOf } from '../lib/colors';
 
 function MiniBar({ pct, color }) {
   return (
-    <div className="h-1.5 rounded-full bg-slate-200 dark:bg-slate-700/70 overflow-hidden">
+    <div className="h-1.5 rounded-full bg-slate-200 dark:bg-white/[0.05] overflow-hidden">
       <div
         className="h-full origin-left animate-grow-x"
-        style={{ width: `${Math.max(0, Math.min(100, pct))}%`, background: color }}
+        style={{
+          width: `${Math.max(0, Math.min(100, pct))}%`,
+          background: `linear-gradient(90deg, ${color}99, ${color})`,
+          boxShadow: `0 0 10px ${color}55`,
+        }}
       />
     </div>
   );
@@ -14,16 +18,17 @@ function MiniBar({ pct, color }) {
 
 export default function ExpandedDetail({ officer }) {
   const totalKm = officer.total_km || 0;
-
   const pieData = OP_TYPES
     .map((op) => ({ name: op, value: officer.ops?.[op]?.km || 0, color: colorOf(op) }))
     .filter((d) => d.value > 0);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-5 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-200 dark:border-slate-800 animate-slide-down">
-      {/* Op breakdown cards */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-5 bg-slate-50/40 dark:bg-black/30 border-t border-slate-200 dark:border-white/[0.04] animate-slide-down">
       <div className="lg:col-span-2">
-        <h4 className="label mb-3">Operation breakdown</h4>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="h-px w-6 bg-gradient-to-r from-transparent to-emerald-500/50" />
+          <h4 className="label">Operation breakdown</h4>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
           {OP_TYPES.map((op) => {
             const data = officer.ops?.[op] || { count: 0, km: 0 };
@@ -33,14 +38,15 @@ export default function ExpandedDetail({ officer }) {
             return (
               <div
                 key={op}
-                className={`rounded-lg border p-3 ${active
-                  ? 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'
-                  : 'border-slate-200/60 dark:border-slate-800/60 bg-white/50 dark:bg-slate-900/40 opacity-50'
+                className={`relative rounded-lg border p-3 transition-all ${active
+                  ? 'border-slate-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.025]'
+                  : 'border-slate-200/60 dark:border-white/[0.04] bg-white/40 dark:bg-white/[0.01] opacity-50'
                 }`}
+                style={active ? { boxShadow: `inset 2px 0 0 ${c}` } : undefined}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="h-2 w-2 rounded-sm shrink-0" style={{ background: c }} />
+                    <span className="h-2 w-2 rounded-sm shrink-0" style={{ background: c, boxShadow: active ? `0 0 8px ${c}88` : 'none' }} />
                     <span className="text-xs font-mono truncate">{op}</span>
                   </div>
                   <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 tabular-nums">
@@ -49,23 +55,23 @@ export default function ExpandedDetail({ officer }) {
                 </div>
                 <div className="mt-2 flex items-baseline gap-1.5">
                   <span className="text-lg stat-num">{data.km.toLocaleString()}</span>
-                  <span className="text-[10px] font-mono text-slate-500">km</span>
+                  <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">km</span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  {data.count} op{data.count === 1 ? '' : 's'}
+                <p className="text-[10px] text-slate-500 mt-0.5 font-mono uppercase tracking-wider">
+                  {data.count} OP{data.count === 1 ? '' : 'S'}
                 </p>
-                <div className="mt-2">
-                  <MiniBar pct={pct} color={c} />
-                </div>
+                <div className="mt-2"><MiniBar pct={pct} color={c} /></div>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Pie chart of km distribution */}
-      <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 p-4">
-        <h4 className="label mb-2">KM distribution</h4>
+      <div className="rounded-lg border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="h-px w-6 bg-gradient-to-r from-transparent to-cyan-500/50" />
+          <h4 className="label">KM distribution</h4>
+        </div>
         {pieData.length > 0 ? (
           <div className="h-56">
             <ResponsiveContainer>
@@ -86,8 +92,8 @@ export default function ExpandedDetail({ officer }) {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    background: 'rgba(15,23,42,0.95)',
-                    border: '1px solid #334155',
+                    background: 'rgba(5,8,15,0.95)',
+                    border: '1px solid rgba(16,185,129,0.25)',
                     borderRadius: 8,
                     color: '#f1f5f9',
                     fontSize: 12,

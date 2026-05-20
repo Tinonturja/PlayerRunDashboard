@@ -14,10 +14,12 @@ const queryClient = new QueryClient({
   },
 });
 
-// Apply persisted theme before first paint to avoid a flash
+// Pre-paint theme. Default is dark for the cinematic look unless the user
+// has explicitly chosen light.
 const stored = localStorage.getItem('opd.theme');
-const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-if (stored === 'dark' || (!stored && prefersDark)) {
+if (stored === 'light') {
+  document.documentElement.classList.remove('dark');
+} else {
   document.documentElement.classList.add('dark');
 }
 

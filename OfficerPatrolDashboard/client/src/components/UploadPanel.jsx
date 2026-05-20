@@ -30,8 +30,7 @@ export default function UploadPanel({ meta }) {
 
   const onDrop = (files) => {
     const file = files?.[0];
-    if (!file) return;
-    setPending(file);
+    if (file) setPending(file);
   };
 
   const { getRootProps, getInputProps, isDragActive, isDragReject, open } = useDropzone({
@@ -48,39 +47,42 @@ export default function UploadPanel({ meta }) {
 
   const startUpload = () => {
     if (!pending) return;
-    upload.mutate(pending, {
-      onSettled: () => setPending(null),
-    });
+    upload.mutate(pending, { onSettled: () => setPending(null) });
   };
 
   return (
-    <section className="panel-soft">
+    <section className="panel-cinema overflow-hidden">
       <button
         onClick={() => setCollapsed((c) => !c)}
-        className="w-full flex items-center justify-between px-5 py-3 text-left"
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
         aria-expanded={!collapsed}
       >
         <div className="flex items-center gap-3">
-          <svg className="h-5 w-5 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5-5m0 0l5 5m-5-5v12" />
-          </svg>
+          <div className="relative h-10 w-10 rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/30 grid place-items-center">
+            <svg className="h-5 w-5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5-5m0 0l5 5m-5-5v12" />
+            </svg>
+            <span className="absolute inset-0 rounded-lg blur-md bg-emerald-500/15" aria-hidden />
+          </div>
           <div>
-            <h2 className="text-sm font-semibold tracking-tight">Upload Patrol Workbook</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <h2 className="text-sm font-semibold tracking-[0.18em] font-mono text-slate-700 dark:text-slate-200">
+              UPLOAD · WORKBOOK
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {meta?.originalName ? (
                 <>
-                  <span className="font-mono">{meta.originalName}</span>
+                  <span className="font-mono text-slate-400 dark:text-slate-300">{meta.originalName}</span>
                   <span className="mx-1.5 opacity-50">·</span>
                   {formatBytes(meta.size)}
                   {ago && (
                     <>
                       <span className="mx-1.5 opacity-50">·</span>
-                      Last updated {ago}
+                      <span className="text-emerald-400/90">Last updated {ago}</span>
                     </>
                   )}
                 </>
               ) : (
-                'Drop a .xlsx file to load the dashboard'
+                'Drop a .xlsx file to bring this dashboard online'
               )}
             </p>
           </div>
@@ -94,34 +96,46 @@ export default function UploadPanel({ meta }) {
       </button>
 
       {!collapsed && (
-        <div className="border-t border-slate-200 dark:border-slate-800 p-5 animate-slide-down">
+        <div className="border-t border-slate-200 dark:border-white/[0.06] p-5 sm:p-6 animate-slide-down">
           <div
             {...getRootProps()}
-            className={`relative rounded-xl border-2 border-dashed p-6 transition-colors text-center
-              ${isDragActive ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : 'border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/40'}
-              ${isDragReject ? 'border-red-400 bg-red-50 dark:bg-red-900/20' : ''}
+            className={`relative rounded-2xl border-2 border-dashed p-8 transition-all text-center
+              ${isDragActive
+                ? 'border-emerald-400 bg-emerald-500/10 shadow-[0_0_0_1px_rgba(16,185,129,0.4),0_0_60px_rgba(16,185,129,0.25)]'
+                : 'border-slate-300 dark:border-white/10 bg-slate-50/40 dark:bg-white/[0.015]'}
+              ${isDragReject ? 'border-rose-400 bg-rose-500/10' : ''}
             `}
           >
+            {/* Faint corner accents */}
+            <span className="absolute top-2 left-2 h-3 w-3 border-l-2 border-t-2 border-emerald-500/30 rounded-tl-md" />
+            <span className="absolute top-2 right-2 h-3 w-3 border-r-2 border-t-2 border-emerald-500/30 rounded-tr-md" />
+            <span className="absolute bottom-2 left-2 h-3 w-3 border-l-2 border-b-2 border-emerald-500/30 rounded-bl-md" />
+            <span className="absolute bottom-2 right-2 h-3 w-3 border-r-2 border-b-2 border-emerald-500/30 rounded-br-md" />
+
             <input {...getInputProps()} />
-            <svg className="mx-auto h-10 w-10 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V8a4 4 0 014-4h2a4 4 0 014 4v8m-9 4h6a4 4 0 004-4v-1H4v1a4 4 0 004 4z" />
-            </svg>
-            <p className="mt-3 text-sm font-medium">
-              {isDragActive ? 'Drop the file to upload' : 'Drag & drop your .xlsx here'}
+            <div className="mx-auto h-14 w-14 rounded-2xl bg-emerald-500/10 grid place-items-center ring-1 ring-emerald-500/30">
+              <svg className="h-7 w-7 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V8a4 4 0 014-4h2a4 4 0 014 4v8m-9 4h6a4 4 0 004-4v-1H4v1a4 4 0 004 4z" />
+              </svg>
+            </div>
+            <p className="mt-4 text-sm font-medium">
+              {isDragActive ? 'Drop the file to upload' : 'Drag & drop your .xlsx workbook here'}
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">or</p>
-            <button type="button" onClick={open} className="btn mt-2">
+            <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500 dark:text-slate-500 mt-1.5">
+              · OR ·
+            </p>
+            <button type="button" onClick={open} className="btn mt-3">
               Browse files
             </button>
 
             {pending && (
-              <div className="mt-5 inline-flex items-center gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2">
-                <svg className="h-4 w-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <div className="mt-5 inline-flex items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2">
+                <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z" />
                 </svg>
-                <span className="text-xs font-mono">{pending.name}</span>
+                <span className="text-xs font-mono text-slate-200">{pending.name}</span>
                 <span className="text-xs text-slate-500">{formatBytes(pending.size)}</span>
-                <button onClick={() => setPending(null)} className="text-xs text-slate-400 hover:text-red-500" aria-label="Remove">
+                <button onClick={() => setPending(null)} className="text-xs text-slate-400 hover:text-rose-400" aria-label="Remove">
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -131,14 +145,10 @@ export default function UploadPanel({ meta }) {
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Only <span className="font-mono">.xlsx</span> files are accepted. Uploading replaces the current dataset.
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Only <span className="font-mono text-slate-400 dark:text-slate-300">.xlsx</span> files are accepted. Uploading replaces the current dataset.
             </p>
-            <button
-              onClick={startUpload}
-              disabled={!pending || upload.isPending}
-              className="btn-primary"
-            >
+            <button onClick={startUpload} disabled={!pending || upload.isPending} className="btn-primary">
               {upload.isPending ? (
                 <>
                   <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -148,7 +158,12 @@ export default function UploadPanel({ meta }) {
                   Uploading…
                 </>
               ) : (
-                <>Upload</>
+                <>
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Deploy Workbook
+                </>
               )}
             </button>
           </div>
