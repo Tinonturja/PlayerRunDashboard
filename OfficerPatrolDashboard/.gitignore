@@ -1,0 +1,19 @@
+node_modules
+.DS_Store
+.env
+.env.local
+
+# Build output
+client/dist
+
+# Uploaded files (don't commit user data, but keep folder)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode
+.idea
