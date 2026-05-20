@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Player Run Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">PR</span>
+      <div>
+        <h1>Player Run Dashboard</h1>
+        <p class="tag">Track, analyze and visualize player run stats</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="exportCsvBtn" class="btn ghost" title="Download all data as CSV">Export CSV</button>
+      <label class="btn ghost" for="importCsvInput" title="Import players from CSV">
+        Import CSV
+        <input id="importCsvInput" type="file" accept=".csv" hidden />
+      </label>
+      <button id="loadSampleBtn" class="btn ghost">Load Sample</button>
+      <button id="clearAllBtn" class="btn danger">Clear All</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Input form -->
+    <section class="card form-card">
+      <div class="card-header">
+        <h2 id="formTitle">Add Player</h2>
+        <p class="muted" id="formHint">Enter player stats below. Average and Strike Rate are auto-calculated.</p>
+      </div>
+      <form id="playerForm" class="grid form-grid" autocomplete="off">
+        <input type="hidden" id="playerId" />
+        <div class="field">
+          <label for="name">Player Name</label>
+          <input type="text" id="name" required placeholder="e.g. Virat Kohli" />
+        </div>
+        <div class="field">
+          <label for="team">Team</label>
+          <input type="text" id="team" placeholder="e.g. India" />
+        </div>
+        <div class="field">
+          <label for="matches">Matches</label>
+          <input type="number" id="matches" min="0" required value="0" />
+        </div>
+        <div class="field">
+          <label for="innings">Innings</label>
+          <input type="number" id="innings" min="0" required value="0" />
+        </div>
+        <div class="field">
+          <label for="notOuts">Not Outs</label>
+          <input type="number" id="notOuts" min="0" value="0" />
+        </div>
+        <div class="field">
+          <label for="runs">Runs</label>
+          <input type="number" id="runs" min="0" required value="0" />
+        </div>
+        <div class="field">
+          <label for="balls">Balls Faced</label>
+          <input type="number" id="balls" min="0" value="0" />
+        </div>
+        <div class="field">
+          <label for="highest">Highest Score</label>
+          <input type="number" id="highest" min="0" value="0" />
+        </div>
+        <div class="field">
+          <label for="fours">Fours</label>
+          <input type="number" id="fours" min="0" value="0" />
+        </div>
+        <div class="field">
+          <label for="sixes">Sixes</label>
+          <input type="number" id="sixes" min="0" value="0" />
+        </div>
+        <div class="field full">
+          <div class="form-actions">
+            <button type="submit" class="btn primary" id="submitBtn">Add Player</button>
+            <button type="button" class="btn ghost" id="resetBtn">Reset</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- KPI cards -->
+    <section class="kpis">
+      <div class="kpi"><span class="kpi-label">Players</span><span id="kpiPlayers" class="kpi-value">0</span></div>
+      <div class="kpi"><span class="kpi-label">Total Runs</span><span id="kpiRuns" class="kpi-value">0</span></div>
+      <div class="kpi"><span class="kpi-label">Total Matches</span><span id="kpiMatches" class="kpi-value">0</span></div>
+      <div class="kpi"><span class="kpi-label">Avg Strike Rate</span><span id="kpiSR" class="kpi-value">0.00</span></div>
+      <div class="kpi"><span class="kpi-label">Top Scorer</span><span id="kpiTop" class="kpi-value small">—</span></div>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts grid">
+      <div class="card chart-card">
+        <div class="card-header">
+          <h2>Runs by Player</h2>
+          <p class="muted">Top 10 by total runs</p>
+        </div>
+        <canvas id="runsChart"></canvas>
+      </div>
+      <div class="card chart-card">
+        <div class="card-header">
+          <h2>Batting Average</h2>
+          <p class="muted">Top 10 by average</p>
+        </div>
+        <canvas id="avgChart"></canvas>
+      </div>
+      <div class="card chart-card wide">
+        <div class="card-header">
+          <h2>Boundaries Mix</h2>
+          <p class="muted">4s vs 6s across all players</p>
+        </div>
+        <canvas id="boundariesChart"></canvas>
+      </div>
+      <div class="card chart-card wide">
+        <div class="card-header">
+          <h2>Runs vs Strike Rate</h2>
+          <p class="muted">Each dot is a player</p>
+        </div>
+        <canvas id="scatterChart"></canvas>
+      </div>
+    </section>
+
+    <!-- Data table -->
+    <section class="card">
+      <div class="card-header row">
+        <div>
+          <h2>Players</h2>
+          <p class="muted">Click a column header to sort. Use actions to edit/delete.</p>
+        </div>
+        <input id="searchInput" class="search" type="search" placeholder="Search players or teams..." />
+      </div>
+      <div class="table-wrap">
+        <table id="playersTable">
+          <thead>
+            <tr>
+              <th data-sort="name">Name</th>
+              <th data-sort="team">Team</th>
+              <th data-sort="matches" class="num">M</th>
+              <th data-sort="innings" class="num">I</th>
+              <th data-sort="runs" class="num">Runs</th>
+              <th data-sort="highest" class="num">HS</th>
+              <th data-sort="average" class="num">Avg</th>
+              <th data-sort="strikeRate" class="num">SR</th>
+              <th data-sort="fours" class="num">4s</th>
+              <th data-sort="sixes" class="num">6s</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="playersTbody"></tbody>
+        </table>
+        <p id="emptyState" class="empty">No players yet. Add one above or click "Load Sample".</p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>Data is saved in your browser (localStorage). Use Export CSV to back it up.</span>
+    </footer>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
